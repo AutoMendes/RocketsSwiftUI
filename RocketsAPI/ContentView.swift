@@ -4,23 +4,41 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var rockets: [Rocket] = []
+    @State private var expandedRocketID: String?
 
     var body: some View {
         List(rockets) { rocket in
-            VStack(alignment: .leading) {
-                if let imageUrl = rocket.flickr_images.first, let url = URL(string: imageUrl) {
-                    AsyncImage(url: url) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(height: 200)
-                    } placeholder: {
-                        ProgressView()
+            DisclosureGroup(
+                isExpanded: Binding(
+                    get: { expandedRocketID == rocket.id },
+                    set: { expandedRocketID = $0 ? rocket.id : nil }
+                ),
+                content: {
+                    Text(rocket.description)
+                        .font(.subheadline)
+                        .padding(.vertical, 4)
+                },
+                label: {
+                    VStack(alignment: .center) {
+                        if let imageUrl = rocket.flickr_images.first, let url = URL(string: imageUrl) {
+                            AsyncImage(url: url) { image in
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .frame(height: 120)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                        }
+                        Text(rocket.name)
+                            .font(.headline)
+                            .multilineTextAlignment(.center)
+                            .padding(.top, 8)
                     }
+                    .frame(maxWidth: .infinity)
                 }
-                Text(rocket.name).font(.headline)
-                Text(rocket.description).font(.subheadline)
-            }
+            )
             .padding(.vertical, 8)
         }
         .onAppear {
